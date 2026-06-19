@@ -98,43 +98,41 @@
         }
 
         function updateGoogleSheet(matricNumber) {
-            const payload = { matricNumber: matricNumber };
+    // Append the matric number as a query string parameter
+    const fetchUrl = `${API_ENDPOINT}?matricNumber=${encodeURIComponent(matricNumber)}`;
 
-            // Note: We use Content-Type: text/plain to bypass complex CORS preflight issues 
-            // when talking from GitHub Pages to Google Apps Script. GAS still reads it as text/json payload.
-            fetch(API_ENDPOINT, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/plain;charset=utf-8"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Verified!',
-                        text: data.message,
-                        timer: 2500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Record Not Found',
-                        text: data.message
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error',
-                    text: 'Failed to communicate with the server.'
-                });
+    // A standard GET request bypasses POST CORS preflight issues entirely
+    fetch(fetchUrl)
+    .then(response => {
+        if (!response.ok) throw new Error("Network response was not ok");
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === "success") {
+            Swal.fire({
+                icon: 'success',
+                title: 'Verified!',
+                text: data.message,
+                timer: 2500,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Record Not Found',
+                text: data.message
             });
         }
+    })
+    .catch(error => {
+        console.error("Fetch error:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Failed to communicate with the server. Ensure the App Script is deployed publicly.'
+        });
+    });
+}
 
         btnRestart.addEventListener("click", startScanner);
         document.addEventListener("DOMContentLoaded", startScanner);
