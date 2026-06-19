@@ -99,40 +99,29 @@
 
         function updateGoogleSheet(matricNumber) {
     // Append the matric number as a query string parameter
-    const fetchUrl = `${API_ENDPOINT}?matricNumber=${encodeURIComponent(matricNumber)}`;
+const fetchUrl = `${API_ENDPOINT}?matricNumber=${encodeURIComponent(matricNumber)}`;
 
-    // A standard GET request bypasses POST CORS preflight issues entirely
-    fetch(fetchUrl)
-    .then(response => {
-        if (!response.ok) throw new Error("Network response was not ok");
-        return response.json();
-    })
-    .then(data => {
-        if (data.status === "success") {
-            Swal.fire({
-                icon: 'success',
-                title: 'Verified!',
-                text: data.message,
-                timer: 2500,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Record Not Found',
-                text: data.message
-            });
-        }
-    })
-    .catch(error => {
-        console.error("Fetch error:", error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Network Error',
-            text: 'Failed to communicate with the server. Ensure the App Script is deployed publicly.'
-        });
+fetch(fetchUrl, {
+    method: 'GET',
+    mode: 'no-cors' // Forces the browser to ignore CORS policies
+})
+.then(() => {
+    // With no-cors, we cannot read response.json(), so we assume success if no network crash occurs.
+    Swal.fire({
+        icon: 'success',
+        title: 'Scan Sent',
+        text: 'Data submitted to server.',
+        timer: 2000,
+        showConfirmButton: false
     });
-}
+})
+.catch(error => {
+    Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Could not reach the database.'
+    });
+});
 
         btnRestart.addEventListener("click", startScanner);
         document.addEventListener("DOMContentLoaded", startScanner);
